@@ -51,6 +51,13 @@ android {
 }
 
 dependencies {
+    implementation ("androidx.compose.runtime:runtime-livedata:1.6.0")
+
+
+    implementation("junit:junit:4.12")
+    testImplementation("com.google.truth:truth:1.1.5")
+    testImplementation("org.jetbrains.kotlin:kotlin-test:1.9.0")
+
     val nav_version = "2.7.5"
     val compose_version = "1.6.0-alpha08"
     val room = "2.6.0"
