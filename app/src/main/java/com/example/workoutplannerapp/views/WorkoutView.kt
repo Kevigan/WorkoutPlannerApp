@@ -1,5 +1,6 @@
 package com.example.workoutplannerapp.views
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -16,13 +17,19 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.example.workoutplannerapp.Screen
 import com.example.workoutplannerapp.data.WorkoutItemEntity
 import com.example.workoutplannerapp.data.WorkoutItemType
+import com.example.workoutplannerapp.data.WorkoutMode
 import com.example.workoutplannerapp.data.WorkoutWithItems
 import com.example.workoutplannerapp.data.predefinedExercises
+import com.example.workoutplannerapp.viewmodels.WorkoutViewModel
 
 @Composable
 fun WorkoutView(
+    navController: NavController,
+    workoutViewModel: WorkoutViewModel,
     workout: WorkoutWithItems,
     onBack: () -> Unit
 ) {
@@ -42,10 +49,32 @@ fun WorkoutView(
         },
         bottomBar = {
             BottomAppBar {
-                // You can add actions or info here
-                Text("Bottom Bar", modifier = Modifier.padding(16.dp))
+                Button(onClick = {
+                    if (workout.workout.mode == WorkoutMode.MANUAL) {
+                        Log.d("WorkoutNavigation", "Navigating to PlayView (Manual mode)")
+                        navController.navigate(Screen.PlayScreen.route)
+                    } else {
+                        Log.d("WorkoutNavigation", "Navigating to TimedPlayView (Timed mode)")
+                        navController.navigate(Screen.TimedPlayScreen.route)
+                    }
+                }) {
+                    Text("Start Workout")
+                }
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                Button(
+                    onClick = {
+                        workoutViewModel.selectWorkout(workout)
+                        navController.navigate(Screen.EditWorkoutScreen.route)
+                    },
+                    modifier = Modifier.padding(8.dp)
+                ) {
+                    Text("Edit")
+                }
             }
         }
+
     ) { innerPadding ->
         LazyColumn(
             contentPadding = innerPadding,

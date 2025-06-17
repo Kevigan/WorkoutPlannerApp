@@ -29,19 +29,54 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.ui.draw.clip
+import androidx.navigation.NavController
+import com.example.workoutplannerapp.Screen
 import com.example.workoutplannerapp.data.ExerciseCategory
 import com.example.workoutplannerapp.data.ExerciseDefinition
 import com.example.workoutplannerapp.data.SelectedExercise
+import com.example.workoutplannerapp.data.WorkoutMode
+import com.example.workoutplannerapp.data.WorkoutWithItems
 
 
 @Composable
-fun CreateWorkoutView(workoutViewModel: WorkoutViewModel) {
+fun CreateWorkoutView(
+    navController: NavController,
+    workoutViewModel: WorkoutViewModel,
+    workoutToEdit: WorkoutWithItems? = null,
+    isEditing: Boolean = false
+) {
     val selectedExercises = remember { mutableStateListOf<SelectedExercise>() }
     var selectedIndex by remember { mutableStateOf<Int?>(null) }
     val listState = remember { LazyListState() }
     var showSaveDialog by remember { mutableStateOf(false) }
     var workoutName by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf<ExerciseCategory?>(null) }
+    var workoutMode by remember { mutableStateOf(WorkoutMode.MANUAL) }
+
+    LaunchedEffect(workoutToEdit) {
+        workoutToEdit?.let { workout ->
+            workoutName = workout.workout.title
+            workoutMode = workout.workout.mode
+            selectedExercises.clear()
+            selectedExercises.addAll(
+                workout.items.map { item ->
+                    val definition = predefinedExercises.find { it.name == item.name }
+                        ?: ExerciseDefinition(
+                            name = item.name ?: "Unknown",
+                            category = ExerciseCategory.PAUSE,
+                            imageResId = R.drawable.baseline_pause_circle_24
+                        )
+
+                    SelectedExercise(
+                        definition = definition,
+                        sets = mutableStateOf(item.sets ?: 3),
+                        reps = mutableStateOf(item.reps ?: 12),
+                        durationSeconds = mutableStateOf(item.durationSeconds ?: 30)
+                    )
+                }
+            )
+        }
+    }
 
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -63,6 +98,30 @@ fun CreateWorkoutView(workoutViewModel: WorkoutViewModel) {
                     .padding(paddingValues)
                     .fillMaxSize()
             ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFFE3F2FD), shape = MaterialTheme.shapes.medium)
+                        .padding(12.dp)
+                ) {
+                    Column {
+                        Text("Workout Mode", style = MaterialTheme.typography.h6)
+
+                        Row(modifier = Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                            WorkoutMode.values().forEach { mode ->
+                                OutlinedButton(
+                                    onClick = { workoutMode = mode },
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        backgroundColor = if (workoutMode == mode) Color(0xFF90CAF9) else Color.Transparent
+                                    )
+                                ) {
+                                    Text(mode.name.lowercase().replaceFirstChar { it.uppercase() })
+                                }
+                            }
+                        }
+                    }
+                }
+
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -154,7 +213,6 @@ fun CreateWorkoutView(workoutViewModel: WorkoutViewModel) {
                     )
                 }
 
-
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -202,10 +260,16 @@ fun CreateWorkoutView(workoutViewModel: WorkoutViewModel) {
                                 }
 
                                 // Sets x Reps or Duration
-                                val detailsText = when (exercise.definition.category) {
-                                    ExerciseCategory.CARDIO, ExerciseCategory.PAUSE -> "${exercise.durationSeconds.value}s"
-                                    else -> "${exercise.sets.value}x${exercise.reps.value}"
+                                val detailsText = if (
+                                    workoutMode == WorkoutMode.TIMED ||
+                                    exercise.definition.category == ExerciseCategory.CARDIO ||
+                                    exercise.definition.category == ExerciseCategory.PAUSE
+                                ) {
+                                    "${exercise.durationSeconds.value}s"
+                                } else {
+                                    "${exercise.sets.value}x${exercise.reps.value}"
                                 }
+
 
                                 Text(
                                     text = detailsText,
@@ -238,8 +302,10 @@ fun CreateWorkoutView(workoutViewModel: WorkoutViewModel) {
                         onSave = {
                             // Convert ExerciseDefinition to WorkoutItemEntity
                             val items = selectedExercises.map { selected ->
-                                val isDurationBased = selected.definition.category == ExerciseCategory.CARDIO ||
+                                val isDurationBased = workoutMode == WorkoutMode.TIMED ||
+                                        selected.definition.category == ExerciseCategory.CARDIO ||
                                         selected.definition.category == ExerciseCategory.PAUSE
+
 
                                 WorkoutItemEntity(
                                     workoutId = 0,
@@ -250,15 +316,25 @@ fun CreateWorkoutView(workoutViewModel: WorkoutViewModel) {
                                     durationSeconds = if (isDurationBased) (selected.durationSeconds.value).coerceAtLeast(1) else null
                                 )
                             }
-
-
-                            workoutViewModel.saveWorkout(title = workoutName, items = items)
+                            if (isEditing && workoutToEdit != null) {
+                                workoutViewModel.updateWorkout(workoutToEdit.workout.copy(title = workoutName), items)
+                            } else {
+                                workoutViewModel.saveWorkoutWithMode(title = workoutName, mode = workoutMode, items = items)
+                            }
 
                             // Clear dialog and input state
                             showSaveDialog = false
                             workoutName = ""
                             selectedExercises.clear()
                             selectedIndex = null
+
+                            navController.navigate(Screen.MainScreen.route) {
+                                popUpTo(Screen.MainScreen.route) {
+                                    inclusive = false
+                                }
+                                launchSingleTop = true
+                            }
+
                         }
                     )
                 }
@@ -293,7 +369,8 @@ fun CreateWorkoutView(workoutViewModel: WorkoutViewModel) {
                         onDelete = {
                             selectedExercises.removeAt(index)
                             selectedIndex = null
-                        }
+                        },
+                        workoutMode = workoutMode
                     )
                 }
 
@@ -312,14 +389,14 @@ fun CreateWorkoutView(workoutViewModel: WorkoutViewModel) {
                 }
             }
         }
-
     }
 }
 
 @Composable
 fun SetRepsAndSetsCard(
     exercise: SelectedExercise,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    workoutMode: WorkoutMode
 ) {
     Card(
         modifier = Modifier
@@ -339,8 +416,11 @@ fun SetRepsAndSetsCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Column {
-                    if (exercise.definition.category == ExerciseCategory.CARDIO ||
-                        exercise.definition.category == ExerciseCategory.PAUSE) {
+                    if (workoutMode == WorkoutMode.TIMED ||
+                        exercise.definition.category == ExerciseCategory.CARDIO ||
+                        exercise.definition.category == ExerciseCategory.PAUSE
+                    ) {
+                        // ⏱️ Show duration-based UI
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text("Duration", style = MaterialTheme.typography.body2)
                             IconButton(onClick = {
@@ -364,6 +444,7 @@ fun SetRepsAndSetsCard(
                             }
                         }
                     } else {
+                        // 💪 Show sets & reps-based UI
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text("Sets", style = MaterialTheme.typography.body2)
                             IconButton(onClick = {

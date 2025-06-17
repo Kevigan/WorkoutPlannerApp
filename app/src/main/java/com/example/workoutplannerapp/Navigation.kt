@@ -12,6 +12,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.workoutplannerapp.viewmodels.WorkoutViewModel
 import com.example.workoutplannerapp.views.CreateWorkoutView
 import com.example.workoutplannerapp.views.MainView
+import com.example.workoutplannerapp.views.PlayView
+import com.example.workoutplannerapp.views.TimedPlayView
 import com.example.workoutplannerapp.views.WorkoutView
 
 @Composable
@@ -32,6 +34,8 @@ fun Navigation(
 
             selectedWorkout?.let { workout ->
                 WorkoutView(
+                    navController = navController,
+                    workoutViewModel = workoutViewModel,
                     workout = workout,
                     onBack = {
                         workoutViewModel.clearSelectedWorkout()
@@ -45,7 +49,40 @@ fun Navigation(
         }
 
         composable(Screen.CreateWorkoutScreen.route){
-            CreateWorkoutView(workoutViewModel)
+            CreateWorkoutView(navController ,workoutViewModel)
         }
+
+        composable(Screen.EditWorkoutScreen.route) {
+            val selectedWorkout by workoutViewModel.selectedWorkout.observeAsState()
+            selectedWorkout?.let { workout ->
+                CreateWorkoutView(
+                    navController = navController,
+                    workoutViewModel = workoutViewModel,
+                    workoutToEdit = workout,
+                    isEditing = true
+                )
+            } ?: run {
+                Text("No workout loaded.")
+            }
+        }
+
+        composable(Screen.PlayScreen.route) {
+            val selectedWorkout by workoutViewModel.selectedWorkout.observeAsState()
+            selectedWorkout?.let { workout ->
+                PlayView(workout = workout) {
+                    navController.popBackStack()
+                }
+            }
+        }
+
+        composable(Screen.TimedPlayScreen.route) {
+            val selectedWorkout by workoutViewModel.selectedWorkout.observeAsState()
+            selectedWorkout?.let { workout ->
+                TimedPlayView(workout = workout) {
+                    navController.popBackStack()
+                }
+            }
+        }
+
     }
 }

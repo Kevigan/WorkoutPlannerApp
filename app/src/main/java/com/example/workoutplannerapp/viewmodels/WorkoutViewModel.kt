@@ -3,7 +3,9 @@ package com.example.workoutplannerapp.viewmodels
 import android.app.Application
 import androidx.lifecycle.*
 import com.example.workoutplannerapp.data.AppDatabase
+import com.example.workoutplannerapp.data.WorkoutEntity
 import com.example.workoutplannerapp.data.WorkoutItemEntity
+import com.example.workoutplannerapp.data.WorkoutMode
 import com.example.workoutplannerapp.data.WorkoutWithItems
 import com.example.workoutplannerapp.repository.WorkoutRepository
 import kotlinx.coroutines.launch
@@ -22,14 +24,20 @@ class WorkoutViewModel(application: Application) : AndroidViewModel(application)
         allWorkouts = repository.allWorkouts.asLiveData()
     }
 
-    fun saveWorkout(title: String, items: List<WorkoutItemEntity>) {
+    fun saveWorkoutWithMode(title: String, mode: WorkoutMode, items: List<WorkoutItemEntity>) {
         viewModelScope.launch {
-            repository.insertWorkoutWithItems(title, items)
+            repository.insertWorkoutWithItems(title, mode, items)
         }
     }
 
     fun selectWorkout(workout: WorkoutWithItems) {
         _selectedWorkout.value = workout
+    }
+
+    fun updateWorkout(workout: WorkoutEntity, items: List<WorkoutItemEntity>) {
+        viewModelScope.launch {
+            repository.updateWorkout(workout, items)
+        }
     }
 
     fun clearSelectedWorkout() {
