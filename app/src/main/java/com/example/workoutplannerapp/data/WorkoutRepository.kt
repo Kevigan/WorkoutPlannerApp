@@ -13,7 +13,7 @@ class WorkoutRepository(private val dao: WorkoutDao) {
     }
 
     suspend fun updateWorkout(workout: WorkoutEntity, newItems: List<WorkoutItemEntity>) {
-        dao.updateWorkout(workout) // update the workout title (or other fields)
+        dao.updateWorkout(workout)
 
         dao.deleteWorkoutItemsByWorkoutId(workout.id) // delete old items
 

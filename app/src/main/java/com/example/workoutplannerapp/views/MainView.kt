@@ -2,6 +2,8 @@ package com.example.workoutplannerapp.views
 
 import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,7 +13,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -64,6 +68,27 @@ fun MainView(
                 contentPadding = innerPadding,
                 modifier = Modifier.fillMaxSize()
             ) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colors.primary.copy(alpha = 0.7f))
+                            .padding(vertical = 16.dp)
+                    ) {
+                        Text(
+                            text = "My Workouts",
+                            style = MaterialTheme.typography.h5.copy(fontWeight = FontWeight.Bold),
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
+
+                    Divider(
+                        color = Color.Gray.copy(alpha = 0.5f),
+                        thickness = 1.dp,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                }
+
                 items(workoutList) { workoutWithItems ->
                     WorkoutItem(
                         workout = workoutWithItems.workout,
@@ -74,6 +99,7 @@ fun MainView(
                     )
                 }
             }
+
         }
     }
 }
@@ -81,23 +107,43 @@ fun MainView(
 @Composable
 fun WorkoutItem(workout: WorkoutEntity, onClick: () -> Unit) {
     Card(
-        backgroundColor = MaterialTheme.colors.surface,
+        shape = MaterialTheme.shapes.medium,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
-            .clickable { onClick() },
-        elevation = 4.dp
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+            .clickable { onClick() }
+            .border(
+                width = 2.dp,
+                color = Color.White,
+                shape = MaterialTheme.shapes.medium
+            ),
+        elevation = 8.dp
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Log.d("WorkoutItem", "Title: ${workout.title}")
+        Box(
+            modifier = Modifier
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color(0xFFA5D6A7), // Light Green 300
+                            Color(0xFF81C784)  // Light Green 400
+                        )
+                    )
+                )
+                .fillMaxWidth()
+                .padding(vertical = 24.dp),
+            contentAlignment = Alignment.Center
+        ) {
             Text(
                 text = workout.title,
                 style = TextStyle(
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colors.onSurface
+                    color = Color(0xFF1B5E20) // Darker green text for contrast
                 )
             )
         }
     }
 }
+
+
+

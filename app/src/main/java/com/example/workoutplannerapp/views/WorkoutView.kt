@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -33,57 +34,64 @@ fun WorkoutView(
     workout: WorkoutWithItems,
     onBack: () -> Unit
 ) {
-//TODO start workout with timer, or without timer. with timer each exercise shall remove itself after its
-    //time is up, if no timer, the user can swipe it to go away.
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Background image
+        Image(
+            painter = painterResource(id = com.example.workoutplannerapp.R.drawable.main_background),
+            contentDescription = "Workout Background",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(workout.workout.title) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+        Scaffold(
+            backgroundColor = MaterialTheme.colors.surface.copy(alpha = 0.1f), // overlay effect
+            topBar = {
+                TopAppBar(
+                    title = { Text(workout.workout.title) },
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        }
                     }
-                }
-            )
-        },
-        bottomBar = {
-            BottomAppBar {
-                Button(onClick = {
-                    if (workout.workout.mode == WorkoutMode.MANUAL) {
-                        Log.d("WorkoutNavigation", "Navigating to PlayView (Manual mode)")
-                        navController.navigate(Screen.PlayScreen.route)
-                    } else {
-                        Log.d("WorkoutNavigation", "Navigating to TimedPlayView (Timed mode)")
-                        navController.navigate(Screen.TimedPlayScreen.route)
+                )
+            },
+            bottomBar = {
+                BottomAppBar {
+                    Button(onClick = {
+                        if (workout.workout.mode == WorkoutMode.MANUAL) {
+                            Log.d("WorkoutNavigation", "Navigating to PlayView (Manual mode)")
+                            navController.navigate(Screen.PlayScreen.route)
+                        } else {
+                            Log.d("WorkoutNavigation", "Navigating to TimedPlayView (Timed mode)")
+                            navController.navigate(Screen.TimedPlayScreen.route)
+                        }
+                    }) {
+                        Text("Start Workout")
                     }
-                }) {
-                    Text("Start Workout")
-                }
 
-                Spacer(modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.weight(1f))
 
-                Button(
-                    onClick = {
-                        workoutViewModel.selectWorkout(workout)
-                        navController.navigate(Screen.EditWorkoutScreen.route)
-                    },
-                    modifier = Modifier.padding(8.dp)
-                ) {
-                    Text("Edit")
+                    Button(
+                        onClick = {
+                            workoutViewModel.selectWorkout(workout)
+                            navController.navigate(Screen.EditWorkoutScreen.route)
+                        },
+                        modifier = Modifier.padding(8.dp)
+                    ) {
+                        Text("Edit")
+                    }
                 }
             }
-        }
-
-    ) { innerPadding ->
-        LazyColumn(
-            contentPadding = innerPadding,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(8.dp)
-        ) {
-            items(workout.items) { item ->
-                WorkoutItemEntityRow(item)
+        ) { innerPadding ->
+            LazyColumn(
+                contentPadding = innerPadding,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(8.dp)
+            ) {
+                items(workout.items) { item ->
+                    WorkoutItemEntityRow(item)
+                }
             }
         }
     }

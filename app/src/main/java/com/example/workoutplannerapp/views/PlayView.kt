@@ -23,7 +23,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,10 +31,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.example.workoutplannerapp.data.WorkoutMode
+import com.example.workoutplannerapp.data.WorkoutItemEntity
 import com.example.workoutplannerapp.data.WorkoutWithItems
 
 @Composable
@@ -65,79 +66,61 @@ fun PlayView(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Previous (small)
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                contentAlignment = Alignment.Center
-            ) {
-                previousItem?.let {
-                    ExercisePreview(
-                        title = "Previous: ${it.name}",
-                        imageResId = getImageForExercise(it.name),
-                        small = true
-                    )
-                }
-            }
+            GradientExerciseBox(
+                item = previousItem,
+                label = "Previous",
+                small = true,
+                gradientColors = listOf(Color(0xFFE0E0E0), Color(0xFFBBDEFB)),
+                modifier = Modifier.weight(1f)
+            )
 
             Divider()
 
-            // Current (larger)
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(2.2f), // Larger than previous and next
-                contentAlignment = Alignment.Center
-            ) {
-                currentItem?.let {
-                    ExercisePreview(
-                        title = "Now: ${it.name}",
-                        imageResId = getImageForExercise(it.name),
-                        small = false
-                    )
-                }
-            }
+            GradientExerciseBox(
+                item = currentItem,
+                label = "Now",
+                small = false,
+                gradientColors = listOf(Color(0xFFBBDEFB), Color(0xFF90CAF9)),
+                elevated = true,
+                modifier = Modifier.weight(2.2f)
+            )
 
             Divider()
 
-            // Next (small)
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                contentAlignment = Alignment.Center
-            ) {
-                nextItem?.let {
-                    ExercisePreview(
-                        title = "Next: ${it.name}",
-                        imageResId = getImageForExercise(it.name),
-                        small = true
-                    )
-                }
-            }
+            GradientExerciseBox(
+                item = nextItem,
+                label = "Next",
+                small = true,
+                gradientColors = listOf(Color(0xFFB2EBF2), Color(0xFFA5D6A7)),
+                modifier = Modifier.weight(1f)
+            )
 
-            // Navigation buttons
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // ✅ Navigation Buttons
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Button(
                     onClick = { if (currentIndex > 0) currentIndex-- },
                     enabled = currentIndex > 0
-                ) { Text("Previous") }
+                ) {
+                    Text("Previous")
+                }
 
                 Button(
                     onClick = { if (currentIndex < workout.items.lastIndex) currentIndex++ },
                     enabled = currentIndex < workout.items.lastIndex
-                ) { Text("Next") }
+                ) {
+                    Text("Next")
+                }
             }
         }
     }
 }
-
 @Composable
 fun ExercisePreview(title: String, imageResId: Int?, small: Boolean = false) {
     Column(
@@ -158,6 +141,34 @@ fun ExercisePreview(title: String, imageResId: Int?, small: Boolean = false) {
                     .size(if (small) 64.dp else 240.dp)
                     .clip(CircleShape)
                     .background(Color.LightGray)
+            )
+        }
+    }
+}
+
+@Composable
+fun GradientExerciseBox(
+    item: WorkoutItemEntity?,
+    label: String,
+    small: Boolean,
+    gradientColors: List<Color>,
+    elevated: Boolean = false,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .shadow(if (elevated) 8.dp else 4.dp, shape = MaterialTheme.shapes.medium)
+            .clip(MaterialTheme.shapes.medium)
+            .background(brush = Brush.verticalGradient(colors = gradientColors)),
+        contentAlignment = Alignment.Center
+    ) {
+        item?.let {
+            ExercisePreview(
+                title = "$label: ${it.name}",
+                imageResId = getImageForExercise(it.name),
+                small = small
             )
         }
     }

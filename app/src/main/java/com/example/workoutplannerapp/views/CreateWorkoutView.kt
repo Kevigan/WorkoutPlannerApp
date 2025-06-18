@@ -107,12 +107,17 @@ fun CreateWorkoutView(
                     Column {
                         Text("Workout Mode", style = MaterialTheme.typography.h6)
 
-                        Row(modifier = Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                        Row(
+                            modifier = Modifier.padding(top = 8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
                             WorkoutMode.values().forEach { mode ->
+                                val isSelected = workoutMode == mode
                                 OutlinedButton(
                                     onClick = { workoutMode = mode },
                                     colors = ButtonDefaults.outlinedButtonColors(
-                                        backgroundColor = if (workoutMode == mode) Color(0xFF90CAF9) else Color.Transparent
+                                        backgroundColor = if (isSelected) Color(0xFF90CAF9) else Color.Transparent,
+                                        contentColor = if (isSelected) Color.White else MaterialTheme.colors.onSurface
                                     )
                                 ) {
                                     Text(mode.name.lowercase().replaceFirstChar { it.uppercase() })
@@ -317,8 +322,12 @@ fun CreateWorkoutView(
                                 )
                             }
                             if (isEditing && workoutToEdit != null) {
-                                workoutViewModel.updateWorkout(workoutToEdit.workout.copy(title = workoutName), items)
-                            } else {
+                                workoutViewModel.updateWorkout(
+                                    workoutToEdit.workout.copy(title = workoutName, mode = workoutMode),
+                                    items
+                                )
+                            }
+                            else {
                                 workoutViewModel.saveWorkoutWithMode(title = workoutName, mode = workoutMode, items = items)
                             }
 

@@ -78,7 +78,7 @@ fun Navigation(
         composable(Screen.TimedPlayScreen.route) {
             val selectedWorkout by workoutViewModel.selectedWorkout.observeAsState()
             selectedWorkout?.let { workout ->
-                TimedPlayView(workout = workout) {
+                TimedPlayView(workout = workout, navController) {
                     navController.popBackStack()
                 }
             }
