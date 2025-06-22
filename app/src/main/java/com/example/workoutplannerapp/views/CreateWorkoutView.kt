@@ -307,6 +307,7 @@ fun CreateWorkoutView(
                         onSave = {
                             // Convert ExerciseDefinition to WorkoutItemEntity
                             val items = selectedExercises.map { selected ->
+                                val isPause = selected.definition.category == ExerciseCategory.PAUSE
                                 val isDurationBased = workoutMode == WorkoutMode.TIMED ||
                                         selected.definition.category == ExerciseCategory.CARDIO ||
                                         selected.definition.category == ExerciseCategory.PAUSE
@@ -314,7 +315,7 @@ fun CreateWorkoutView(
 
                                 WorkoutItemEntity(
                                     workoutId = 0,
-                                    type = WorkoutItemType.EXERCISE,
+                                    type = if (isPause) WorkoutItemType.PAUSE else WorkoutItemType.EXERCISE,
                                     name = selected.definition.name,
                                     reps = if (isDurationBased) null else selected.reps.value,
                                     sets = if (isDurationBased) null else selected.sets.value,

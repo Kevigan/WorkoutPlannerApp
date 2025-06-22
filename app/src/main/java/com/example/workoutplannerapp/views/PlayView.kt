@@ -133,18 +133,29 @@ fun ExercisePreview(title: String, imageResId: Int?, small: Boolean = false) {
             text = title,
             style = if (small) MaterialTheme.typography.body2 else MaterialTheme.typography.h6
         )
-        imageResId?.let {
+
+        val imageModifier = Modifier
+            .size(if (small) 64.dp else 240.dp)
+            .clip(CircleShape)
+            .background(Color.White)
+
+        if (imageResId != null) {
             Image(
-                painter = painterResource(id = it),
+                painter = painterResource(id = imageResId),
                 contentDescription = title,
-                modifier = Modifier
-                    .size(if (small) 64.dp else 240.dp)
-                    .clip(CircleShape)
-                    .background(Color.LightGray)
+                modifier = imageModifier
+            )
+        } else if (title.contains("Pause", ignoreCase = true)) {
+            // Show pause icon if this is a pause and no image was found
+            Image(
+                painter = painterResource(id = com.example.workoutplannerapp.R.drawable.baseline_pause_circle_24),
+                contentDescription = "Pause",
+                modifier = imageModifier
             )
         }
     }
 }
+
 
 @Composable
 fun GradientExerciseBox(

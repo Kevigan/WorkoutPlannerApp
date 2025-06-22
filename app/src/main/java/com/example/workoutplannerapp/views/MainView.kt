@@ -29,6 +29,7 @@ import com.example.workoutplannerapp.Screen
 import com.example.workoutplannerapp.data.WorkoutEntity
 import com.example.workoutplannerapp.viewmodels.WorkoutViewModel
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun MainView(
     navController: NavController,
@@ -51,11 +52,7 @@ fun MainView(
             topBar = {
                 TopAppBar(title = { Text("Workout Planner") })
             },
-            bottomBar = {
-                BottomAppBar {
-                    Text("Bottom Bar", modifier = Modifier.padding(16.dp))
-                }
-            },
+
             floatingActionButton = {
                 FloatingActionButton(onClick = {
                     navController.navigate(Screen.CreateWorkoutScreen.route)
@@ -89,15 +86,65 @@ fun MainView(
                     )
                 }
 
-                items(workoutList) { workoutWithItems ->
-                    WorkoutItem(
-                        workout = workoutWithItems.workout,
-                        onClick = {
-                            workoutViewModel.selectWorkout(workoutWithItems)
-                            navController.navigate(Screen.WorkoutScreen.route)
+                items(workoutList, key = { it.workout.id }) { workoutWithItems ->
+                    var showDialog by remember { mutableStateOf(false) }
+
+                    val dismissState = rememberDismissState(
+                        confirmStateChange = { dismissValue ->
+                            if (dismissValue == DismissValue.DismissedToStart) {
+                                showDialog = true
+                            }
+                            false // prevent auto-dismiss, wait for confirmation
                         }
                     )
+
+                    SwipeToDismiss(
+                        state = dismissState,
+                        directions = setOf(DismissDirection.EndToStart),
+                        background = {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(Color.Transparent)
+                                    .padding(horizontal = 20.dp),
+                                contentAlignment = Alignment.CenterEnd
+                            ) {
+                                Text("Delete", color = Color.White)
+                            }
+                        },
+                        dismissContent = {
+                            WorkoutItem(
+                                workout = workoutWithItems.workout,
+                                onClick = {
+                                    workoutViewModel.selectWorkout(workoutWithItems)
+                                    navController.navigate(Screen.WorkoutScreen.route)
+                                }
+                            )
+                        }
+                    )
+
+                    if (showDialog) {
+                        AlertDialog(
+                            onDismissRequest = { showDialog = false },
+                            title = { Text("Delete Workout") },
+                            text = { Text("Are you sure you want to delete this workout?") },
+                            confirmButton = {
+                                TextButton(onClick = {
+                                    workoutViewModel.deleteWorkout(workoutWithItems.workout)
+                                    showDialog = false
+                                }) {
+                                    Text("Yes")
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { showDialog = false }) {
+                                    Text("No")
+                                }
+                            }
+                        )
+                    }
                 }
+
             }
 
         }

@@ -19,6 +19,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.workoutplannerapp.R
 import com.example.workoutplannerapp.Screen
 import com.example.workoutplannerapp.data.WorkoutItemEntity
 import com.example.workoutplannerapp.data.WorkoutItemType
@@ -89,6 +90,9 @@ fun WorkoutView(
                     .fillMaxSize()
                     .padding(8.dp)
             ) {
+                workout.items.forEach {
+                    Log.d("WorkoutItemLogging", "Item: ${it.type} ${it.name ?: "Pause"}")
+                }
                 items(workout.items) { item ->
                     WorkoutItemEntityRow(item)
                 }
@@ -114,16 +118,24 @@ fun WorkoutItemEntityRow(item: WorkoutItemEntity) {
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            val imageModifier = Modifier
+                .padding(end = 12.dp) // Padding on the outside
+                .size(48.dp)
+                .clip(CircleShape)
+                .background(Color.White)
+
             // Show image if found
             if (item.type == WorkoutItemType.EXERCISE && imageResId != null) {
                 Image(
                     painter = painterResource(id = imageResId),
                     contentDescription = item.name,
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .background(Color.White)
-                        .padding(end = 12.dp)
+                    modifier = imageModifier
+                )
+            } else if (item.type == WorkoutItemType.PAUSE) {
+                Image(
+                    painter = painterResource(id = R.drawable.baseline_pause_circle_24),
+                    contentDescription = "Pause",
+                    modifier = imageModifier
                 )
             }
 

@@ -24,4 +24,8 @@ interface WorkoutDao {
     @Transaction
     @Query("SELECT * FROM workouts")
     fun getAllWorkoutsWithItems(): Flow<List<WorkoutWithItems>>
+
+    @Delete
+    suspend fun deleteWorkout(workout: WorkoutEntity)
+
 }

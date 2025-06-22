@@ -20,4 +20,10 @@ class WorkoutRepository(private val dao: WorkoutDao) {
         val updatedItems = newItems.map { it.copy(workoutId = workout.id) }
         dao.insertWorkoutItems(updatedItems) // insert new/updated items
     }
+
+    suspend fun deleteWorkoutWithItems(workout: WorkoutEntity) {
+        dao.deleteWorkoutItemsByWorkoutId(workout.id)
+        dao.deleteWorkout(workout)
+    }
+
 }

@@ -52,6 +52,8 @@ android {
 
 dependencies {
     implementation ("androidx.compose.runtime:runtime-livedata:1.6.0")
+// Coroutine test support
+    testImplementation ("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
 
 
     implementation("junit:junit:4.12")

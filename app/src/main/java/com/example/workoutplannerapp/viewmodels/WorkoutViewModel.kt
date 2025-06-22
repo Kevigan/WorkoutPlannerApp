@@ -43,6 +43,13 @@ class WorkoutViewModel(application: Application) : AndroidViewModel(application)
     fun clearSelectedWorkout() {
         _selectedWorkout.value = null
     }
+
+    fun deleteWorkout(workout: WorkoutEntity) {
+        viewModelScope.launch {
+            repository.deleteWorkoutWithItems(workout)
+        }
+    }
+
 }
 
 

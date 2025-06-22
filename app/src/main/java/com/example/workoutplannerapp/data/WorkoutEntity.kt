@@ -26,10 +26,10 @@ data class WorkoutItemEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val workoutId: Int,
     val type: WorkoutItemType,
-    val name: String?,           // For Exercise
-    val sets: Int?,              // NEW: For Exercise
-    val reps: Int?,              // For Exercise
-    val durationSeconds: Int?    // For Pause
+    val name: String?= null,           // For Exercise
+    val sets: Int?= null,              // NEW: For Exercise
+    val reps: Int?= null,              // For Exercise
+    val durationSeconds: Int?= null    // For Pause
 )
 
 
